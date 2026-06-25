@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/tb-cloud/:path*",
+      "destination": "https://thingsboard.cloud/:path*"
+    },
+    {
+      "source": "/tb-demo/:path*",
+      "destination": "https://demo.thingsboard.io/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
