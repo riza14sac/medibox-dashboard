@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const TELEGRAM_BOT_TOKEN = '8927065898:AAFsZAgzZXENsm8N21g88ncON51yzbU1Y6U';
+const TELEGRAM_BOT_TOKEN = '8927065898:AAGJKKjdSBZQpyr3LqE5cssoCKLnTthqKro';
 const TELEGRAM_CHAT_ID = '1892691796';
 
 /**
