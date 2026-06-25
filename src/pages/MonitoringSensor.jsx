@@ -12,6 +12,7 @@ import {
   Lightbulb
 } from 'lucide-react';
 import { thingsboardService, getSimState } from '../services/thingsboardService';
+import { sendTelegramNotification } from '../services/telegramService';
 
 export default function MonitoringSensor() {
   const [telemetry, setTelemetry] = useState(null);
@@ -21,6 +22,7 @@ export default function MonitoringSensor() {
   
   const pollingRef = useRef(null);
   const consoleEndRef = useRef(null);
+  const prevStatusObatRef = useRef(null);
 
   const fetchTelemetry = async () => {
     try {
@@ -86,6 +88,49 @@ export default function MonitoringSensor() {
       window.removeEventListener('medibox_state_changed', handleStateChange);
     };
   }, [isLive]);
+
+  // Effect for sending Telegram notifications on status_obat change
+  useEffect(() => {
+    if (telemetry) {
+      const prevStatus = prevStatusObatRef.current;
+      const currentStatus = telemetry.status_obat;
+
+      if (prevStatus !== null && currentStatus !== prevStatus) {
+        if (currentStatus === 'Diambil') {
+          const message = "✅ Pasien telah mengambil obat tepat waktu!";
+          sendTelegramNotification(message)
+            .then(() => {
+              setStreamLogs(prev => {
+                const timestamp = new Date().toLocaleTimeString('id-ID');
+                return [...prev, `[${timestamp}] 💬 Telegram: Notifikasi Terkirim ("${message}")`].slice(-25);
+              });
+            })
+            .catch(err => {
+              setStreamLogs(prev => {
+                const timestamp = new Date().toLocaleTimeString('id-ID');
+                return [...prev, `[${timestamp}] ❌ Telegram: Gagal mengirim (${err.message})`].slice(-25);
+              });
+            });
+        } else if (currentStatus === 'Terlewat') {
+          const message = "🚨 PERINGATAN: Pasien melewatkan jadwal minum obat pagi/siang/malam!";
+          sendTelegramNotification(message)
+            .then(() => {
+              setStreamLogs(prev => {
+                const timestamp = new Date().toLocaleTimeString('id-ID');
+                return [...prev, `[${timestamp}] 💬 Telegram: Notifikasi Terkirim ("${message}")`].slice(-25);
+              });
+            })
+            .catch(err => {
+              setStreamLogs(prev => {
+                const timestamp = new Date().toLocaleTimeString('id-ID');
+                return [...prev, `[${timestamp}] ❌ Telegram: Gagal mengirim (${err.message})`].slice(-25);
+              });
+            });
+        }
+      }
+      prevStatusObatRef.current = currentStatus;
+    }
+  }, [telemetry]);
 
   // Autoscroll logger console
   useEffect(() => {
